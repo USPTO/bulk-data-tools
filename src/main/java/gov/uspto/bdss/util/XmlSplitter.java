@@ -7,21 +7,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.input.AutoCloseInputStream;
 
 /**
- * Command line application for splitting large, concatenated "XML" files into multiple legitimate XML files.
- *
- * @author jwolf2
+ * Command line application for splitting large, concatenated "XML" files into the separate XML files that comprise it.
  */
 public class XmlSplitter {
 
@@ -98,10 +92,6 @@ public class XmlSplitter {
 
     }
 
-    /**
-     * @param args the command line arguments
-     * @throws java.io.IOException
-     */
     public static void main(String[] args) throws IOException {
         Options opts = new Options();
         JCommander commander = new JCommander(opts, args);

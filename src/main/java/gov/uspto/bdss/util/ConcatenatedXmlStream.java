@@ -13,11 +13,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Certain "XML" documents are actually a series of XML files that have been concatenated, resulting in a file that is
- * not technically XML. This class manages the concatenation by ensuring that when a new XML document is encountered, the
- * current InputStream terminates and a new input stream is available.
- *
- * @author jwolf2
+ * Allows a single InputStream representing many concatenated XML documents to be processed as an iterator of individual
+ * InputStreams, each representing one XML file. Each XML file in the concatenated stream starts with an XML prolog. This
+ * class looks for these prologs to determine if the iterator should keep providing InputStreams.
  */
 public class ConcatenatedXmlStream implements Iterable<InputStream> {
 
@@ -28,20 +26,18 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
     private final boolean hideSeparators;
 
     /**
-     *
      * @param concatenatedStream - the backing stream
-     * @param encodingName       - how the character data in the backing stream is encoded.
+     * @param encodingName - how the character data in the backing stream is encoded.
      */
     public ConcatenatedXmlStream(InputStream concatenatedStream, String encodingName) {
         this(concatenatedStream, encodingName, false);
     }
 
     /**
-     *
      * @param concatenatedStream - the backing stream
-     * @param encodingName       - how the character data in the backing stream is encoded.
-     * @param hideSeparators     - if true, separators encountered in the input will not manifest themselves in
-     *                           the segmented InputStreams provided by the iterator.
+     * @param encodingName - how the character data in the backing stream is encoded.
+     * @param hideSeparators - if true, separators encountered in the input will not manifest themselves in the segmented
+     * InputStreams provided by the iterator.
      */
     public ConcatenatedXmlStream(InputStream concatenatedStream, String encodingName, boolean hideSeparators) {
         this.concatenatedStream = concatenatedStream;
@@ -51,8 +47,6 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
 
     /**
      * Returned iterator does not support the {@code remove} method.
-     *
-     * @return
      */
     @Override
     public Iterator<InputStream> iterator() {
@@ -96,7 +90,7 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
     private static class BufferedXmlSegmentStream extends InputStream {
 
         private static final String EOL = System.getProperty("line.separator");
-        private static final Pattern XML_PROLOG_PATTERN = Pattern.compile("<\\?xml.*?\\?>", Pattern.CASE_INSENSITIVE);
+        private static final Pattern SEGMENT_START_PATTERN = Pattern.compile("<\\?xml.*?\\?>", Pattern.CASE_INSENSITIVE);
         private final Segment segment;
 
         /**
@@ -111,8 +105,8 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
             final boolean last;
 
             /**
-             * Captures text that was read by a previous segment that actually belongs to this segment. For example, if we
-             * are using the XML prolog as our separator, a line of text such as
+             * Captures text that was read by a previous segment that actually belongs to this segment. For example, if we are
+             * using the XML prolog as our separator, a line of text such as
              * <pre>
              *  </root><?xml version="1.0" encoding="UTF-8"?><root>
              * </pre>
@@ -130,10 +124,6 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
 
             public Segment(String xml, Charset charset, boolean last, String nextSegmentStartingText) throws IOException {
                 super(xml.getBytes(charset));
-//                File temp = File.createTempFile("rtis-bulk-xml-grants", ".xml", new File("C:\\Users\\jwolf2\\Desktop\\temp"));
-//                try (OutputStream out = new FileOutputStream(temp)) {
-//                    out.write(xml.getBytes(charset));
-//                }
                 this.last = last;
                 this.nextSegmentStartingText = nextSegmentStartingText;
             }
@@ -141,11 +131,11 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
         }
 
         BufferedXmlSegmentStream(BufferedReader reader, Charset charset, boolean hideSeparators, String startingText) throws IOException {
-            this.segment = readSegment(reader, charset, XML_PROLOG_PATTERN, hideSeparators, startingText);
+            this.segment = readSegment(reader, charset, SEGMENT_START_PATTERN, hideSeparators, startingText);
         }
 
         private Segment readSegment(BufferedReader reader, Charset encoding, Pattern segmentSeparator,
-                                    boolean hideSeparators, String startingText) throws IOException {
+                boolean hideSeparators, String startingText) throws IOException {
             StringBuilder sb = new StringBuilder();
             if (startingText != null) {
                 sb.append(startingText);
@@ -193,10 +183,7 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
         }
 
         /**
-         * Does nothing. It's up to the originator of the backing stream to close the
-         * backing stream itself.
-         *
-         * @throws IOException
+         * Does nothing. It's up to the originator of the backing stream to close the backing stream itself.
          */
         @Override
         public void close() throws IOException {
@@ -220,8 +207,6 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
 
         /**
          * Returns true if this is the last segment of the entire file.
-         *
-         * @return
          */
         boolean isLastSegment() {
             return segment.last;
@@ -229,8 +214,6 @@ public class ConcatenatedXmlStream implements Iterable<InputStream> {
 
         /**
          * Returns the text that was processed by this segment stream but belongs to the next segment stream.
-         *
-         * @return
          */
         String getNextSegmentStartingText() {
             return segment.nextSegmentStartingText;
