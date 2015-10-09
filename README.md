@@ -1,6 +1,6 @@
 # Bulk Data Storage System Tools
 
-Command line utility for accessing Bulk Data Storage System content, available at https://data.uspto.gov.
+Command line utility for working with Bulk Data Storage System content, available at https://data.uspto.gov.
 
 ## Prerequisites
 
@@ -26,9 +26,7 @@ At this time, the only tool available is an XML spitter.
 
 ### XML Splitter
 
-The splitter takes as input an "XML" file that is actually a series of concatenated XML files, and splits them into individual 
-XML files. Some of USPTO Bulk products, such as 
-[Patent Grant Full Text Data/XML Version 4.5 ICE](https://data.uspto.gov/data2/patent/grant/redbook/fulltext/2015/), 
+The splitter takes as input an "XML" file that is actually a series of concatenated XML files, and splits them into individual XML files. Some of USPTO Bulk products, such as [Patent Grant Full Text Data/XML Version 4.5 ICE](https://data.uspto.gov/data2/patent/grant/redbook/fulltext/2015/), 
 come in this format (zipped). 
 
 ### Usage
